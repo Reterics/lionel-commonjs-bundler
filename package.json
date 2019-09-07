@@ -1,0 +1,12 @@
+{
+  "name": "lionel-commonjs-bundler",
+  "version": "1.0.1",
+  "description": "A Javascript bundler what make your CommonJS javascript to browser compatible",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["commonjs", "bundler"],
+  "author": "Attila Reterics",
+  "license": "GPL"
+}
