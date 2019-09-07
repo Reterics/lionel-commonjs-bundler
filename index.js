@@ -65,7 +65,7 @@ const moduleBundler = {
 				return moduleBundler.packInBundle(methodName, content);
 			}
 		} else {
-			return '// Module not found: '+methodName;
+			return '/** Module not found: ' + methodName + ' **/';
 		}
 	},
 	/**
