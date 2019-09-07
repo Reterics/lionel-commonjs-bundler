@@ -65,7 +65,7 @@ const moduleBundler = {
 				return moduleBundler.packInBundle(methodName, content);
 			}
 		} else {
-			return '/** Module not found: ' + methodName + ' **/';
+			return '#notFound';
 		}
 	},
 	/**
@@ -155,6 +155,10 @@ const moduleBundler = {
 				 * Bundle Recursive
 				 */
 				const loadedFileContent = bundle.loadFile(methodName, address, cwd);
+				if (loadedFileContent === '#notFound') {
+					//If file not found
+					return '';
+				}
 				const loadedFileFolder = address.substring(0,address.lastIndexOf('/') + 1);
 				const loaded = loadRequire(loadedFileContent, path.resolve(cwd,loadedFileFolder));
 				globalContent += loaded;
