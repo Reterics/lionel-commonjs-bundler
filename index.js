@@ -58,7 +58,7 @@ const moduleBundler = {
 		}
 		if (fs.existsSync(realPath)) {
 			if(moduleBundler.loadedCache[realPath]){
-				return moduleBundler.packInBundle(methodName, moduleBundler.loadedCache[realPath]);
+				return '' ;//moduleBundler.packInBundle(methodName, moduleBundler.loadedCache[realPath]);
 			} else{
 				const content = fs.readFileSync(realPath).toString();
 				moduleBundler.loadedCache[realPath] = content;
@@ -114,13 +114,21 @@ const moduleBundler = {
 	 * the code from every file
 	 * @param {String} JSCode
 	 * @param {String} cwd
+	 * @param options
 	 */
-	makeCode : function (JSCode, cwd) {
+	makeCode : function (JSCode, cwd, options) {
 		if(!cwd || typeof cwd !== 'string') cwd = this.cwd;
+		if(!options) options = {};
 		const rule = this.regexps.commonJS;
 		const bundle = this;
-		// Empty cache before bundle
-		bundle.loadedCache = {};
+
+		if (options.loadedCache) {
+			bundle.loadedCache = options.loadedCache;
+		} else {
+			// Empty cache before bundle
+			bundle.loadedCache = {};
+		}
+
 
 		let globalContent = '';
 		/**
@@ -160,6 +168,7 @@ const moduleBundler = {
 
 		const transpiredData = loadRequire(JSCode,cwd);
 
+		options.loadedFiles = Object.keys(bundle.loadedCache);
 		// Empty cache after bundle
 		bundle.loadedCache = {};
 
