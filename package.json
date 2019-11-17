@@ -1,6 +1,6 @@
 {
   "name": "lionel-commonjs-bundler",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A Javascript bundler what make your CommonJS javascript to browser compatible",
   "main": "index.js",
   "scripts": {

@@ -56,13 +56,14 @@ const moduleBundler = {
 		if (!realPath.endsWith('.js')) {
 			realPath += '.js';
 		}
+		const bundle  = this;
 		if (fs.existsSync(realPath)) {
-			if(moduleBundler.loadedCache[realPath]){
+			if(bundle.loadedCache[realPath]){
 				return '' ;//moduleBundler.packInBundle(methodName, moduleBundler.loadedCache[realPath]);
 			} else{
 				const content = fs.readFileSync(realPath).toString();
-				moduleBundler.loadedCache[realPath] = content;
-				return moduleBundler.packInBundle(methodName, content);
+				bundle.loadedCache[realPath] = content;
+				return bundle.packInBundle(methodName, content);
 			}
 		} else {
 			return '#notFound';
@@ -154,7 +155,7 @@ const moduleBundler = {
 				/**
 				 * Bundle Recursive
 				 */
-				const loadedFileContent = bundle.loadFile(methodName, address, cwd);
+				const loadedFileContent = bundle.loadFile.call(bundle,methodName, address, cwd);
 				if (loadedFileContent === '#notFound') {
 					//If file not found
 					return '';
