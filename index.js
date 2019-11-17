@@ -32,9 +32,11 @@ const moduleBundler = {
 		/**
 		 * With this Regular Expressions, the code select Require functions from the code and load files according to
 		 * them.
+		 * 1.0.6 - Support All type of variables: const,let,var
+		 *       - Detect comments
 		 **/
 		commonJS : {
-			require:/(const)+\s*({[\w_,\n\s]*}|[\w_\n\s]*)\s*=\s*require\(['"][\w_./-]+['"]\)[.\w]*;*/g,
+			require:/(|\/\/\s*|\/\*\s*)(const|var|let)+\s*({[\w_,\n\s]*}|[\w_\n\s]*)\s*=\s*require\(['"][\w_./-]+['"]\)[.\w]*;*/g,
 			path:/['"][\w_./-]+['"]/g,
 		}
 	},
@@ -49,24 +51,36 @@ const moduleBundler = {
 	 * @param {String} methodName
 	 * @param {String} filepath
 	 * @param {String} cwd
-	 * @returns {string|*}
+	 * @returns {object}
 	 */
 	loadFile : function (methodName, filepath, cwd) {
 		let realPath = path.resolve(cwd, filepath);
 		if (!realPath.endsWith('.js')) {
 			realPath += '.js';
 		}
+		//For detect index.js inside folders
+		const indexWorkingDirectory = filepath.endsWith('.js') ? filepath.substring(0,filepath.length-3) + '/' : filepath + '/';
+		const indexName = path.resolve(cwd, indexWorkingDirectory + 'index.js');
 		const bundle  = this;
 		if (fs.existsSync(realPath)) {
 			if(bundle.loadedCache[realPath]){
-				return '' ;//moduleBundler.packInBundle(methodName, moduleBundler.loadedCache[realPath]);
+				return {content:'',status:1} ;//moduleBundler.packInBundle(methodName, moduleBundler.loadedCache[realPath]);
 			} else{
 				const content = fs.readFileSync(realPath).toString();
 				bundle.loadedCache[realPath] = content;
-				return bundle.packInBundle(methodName, content);
+				return {content:bundle.packInBundle(methodName, content),status:1};
+			}
+		} else if(fs.existsSync(indexName)) {
+			filepath = indexWorkingDirectory + 'index.js';
+			if(bundle.loadedCache[indexName]){
+				return {content:'',status:1,address:filepath};
+			} else{
+				const content = fs.readFileSync(indexName).toString();
+				bundle.loadedCache[indexName] = content;
+				return {content:bundle.packInBundle(methodName, content),status:1,address:filepath};
 			}
 		} else {
-			return '#notFound';
+			return {content:'',status:0};
 		}
 	},
 	/**
@@ -139,7 +153,10 @@ const moduleBundler = {
 		 */
 		const loadRequire = function (code,cwd) {
 			return code.replace(rule.require,function (require) {
-
+				// If code is commented, we dont load the content
+				if (require.startsWith('//') || require.startsWith('/*')) {
+					return require;
+				}
 				let methodName = '';
 				/**
 				 * Extract the source of file from the require call.
@@ -155,13 +172,16 @@ const moduleBundler = {
 				/**
 				 * Bundle Recursive
 				 */
-				const loadedFileContent = bundle.loadFile.call(bundle,methodName, address, cwd);
-				if (loadedFileContent === '#notFound') {
+				const loadedFile = bundle.loadFile.call(bundle,methodName, address, cwd);
+				if (!loadedFile.status) {
 					//If file not found
 					return '';
 				}
+				if (loadedFile.address) {
+					address = loadedFile.address;
+				}
 				const loadedFileFolder = address.substring(0,address.lastIndexOf('/') + 1);
-				const loaded = loadRequire(loadedFileContent, path.resolve(cwd,loadedFileFolder));
+				const loaded = loadRequire(loadedFile.content, path.resolve(cwd,loadedFileFolder));
 				globalContent += loaded;
 				return require;
 
