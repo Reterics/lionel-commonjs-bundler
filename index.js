@@ -92,7 +92,9 @@ const moduleBundler = {
 	generateName : function (filepath, cwd){
 		return path
 			.resolve(cwd, filepath)
-			.replace(moduleBundler.cwd, '');
+			.replace(moduleBundler.cwd, '')
+			//In order to fix Invalid Unicode escape sequence:
+			.replace(/\\/g,'\\\\');
 		/*.replace(/\//g, '_')
 		.replace(/\\/g, '_');*/
 	},
