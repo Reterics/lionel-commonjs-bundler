@@ -44,7 +44,7 @@ const moduleBundler = {
 	 * Default working directory, Important for "loadFile"
 	 * You can change anytime according to your project
 	 */
-	cwd : __dirname,
+	cwd : process.cwd(), // modified from __dirname
 	loadedCache : {},
 	/**
 	 * Load file from the filesystem according to the CommonJS require path
@@ -89,7 +89,7 @@ const moduleBundler = {
 	 * @param cwd
 	 * @returns {string}
 	 */
-	generateName : function (filepath, cwd){
+	generateName : function (filepath, cwd) {
 		return path
 			.resolve(cwd, filepath)
 			.replace(moduleBundler.cwd, '')
@@ -167,14 +167,14 @@ const moduleBundler = {
 				let address = '';
 				require = require.replace(rule.path, d => {
 					address = d.substring(1, d.length - 1);
-					methodName = bundle.generateName(address,cwd);
+					methodName = bundle.generateName(address, cwd);
 					return '"' + methodName + '"';
 				});
 
 				/**
 				 * Bundle Recursive
 				 */
-				const loadedFile = bundle.loadFile.call(bundle,methodName, address, cwd);
+				const loadedFile = bundle.loadFile.call(bundle, methodName, address, cwd);
 				if (!loadedFile.status) {
 					//If file not found
 					return '';
